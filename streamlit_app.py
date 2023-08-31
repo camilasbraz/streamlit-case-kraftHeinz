@@ -63,6 +63,7 @@ if file1 and file2:
         }
         # Filtrar colunas selecionadas
         colunas_selecionadas = ['id_nacional', 'id_internacional', 'Irregularidade presente']
+        print(selecionados)
         for opcao in selecionados:
             coluna_adp = f"{column_mapping2[opcao]}_adp"
             coluna_workday = f"{column_mapping2[opcao]}_workday"
@@ -70,7 +71,7 @@ if file1 and file2:
         df_select = filtro_false[colunas_selecionadas]
         # Remover colunas irrelevantes
         colunas_skip = ['id_nacional', 'id_internacional', 'Irregularidade presente','Tipo de Admissão', 'Data de Desligamento', 'Modo Ponto', 'work_country', 'genero_check', 'raca_etnia_check', 'estado_civil_check', 'data_nascimento_check', 'data_admissao_check']
-        ordenar = ['id_nacional','id_internacional', 'Irregularidade presente'] + [col for col in filtro_false.columns if col not in colunas_skip]
+        ordenar = ['id_nacional','id_internacional', 'Irregularidade presente'] + [col for col in df_select.columns if col not in colunas_skip]
         df_select = df_select[ordenar]
         # Filtrar por ID Nacional e Internacional
         filter_id_nacional = st.text_input("Filtrar por ID Nacional")
@@ -98,6 +99,7 @@ if file1 and file2:
         # Exibir panorama geral das irregularidades
         st.write("## Panorama geral das irregularidades:")
         st.write("##### Aqui estão os detalhes sobre as irregularidades e dados corretos")
+        st.write("Ponto de atenção: uma parte do número de irregularidades ocorre pela ausência de valores nas colunas de identificares em ambas as bases, e outra parte por incoerência nos valores de cada base.")
        
         # Mapeamento de colunas para nomes legíveis
         column_mapping = {
@@ -114,15 +116,27 @@ if file1 and file2:
 
         false_counts = check_df_cols.apply(lambda col: col.value_counts().get(False, 0))
 
+        
         # Preparar dados para os cards de monitoramento
+        work_from_brazil = df1_cleaned['work_country'].value_counts()['Brazil']
+
+        valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
+        sem_id_nac_adp  = df1_cleaned['id_nacional'].isin(valores_especiais).sum()
+        sem_id_inter_adp = df1_cleaned['id_internacional'].isin(valores_especiais).sum()
+        sem_id_nac_workday  = df2_cleaned['id_nacional'].isin(valores_especiais).sum()
+        sem_id_inter_workday  = df2_cleaned['id_internacional'].isin(valores_especiais).sum()
+        duplicadas_adp = df1_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
+        duplicadas_workday = df2_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
+
         card_data = [
-            [ "Sem ID internacional (ADP)", 8],
-            [ "Sem ID nacional (ADP)", 0],
-            [ "Sem ID internacional (WDAY)", 5],
-            [ "Sem ID nacional (WDAY)", 0],
+            [ "Sem ID internacional (ADP)", sem_id_nac_adp],
+            [ "Sem ID nacional (ADP)", sem_id_inter_adp],
+            [ "Sem ID internacional (WDAY)", sem_id_nac_workday],
+            [ "Sem ID nacional (WDAY)", sem_id_inter_workday],
             # IDS NACIONAL E INTERNACIONAL JUNTOS PARA COMPARAR DUPLCIADAS
-            [ "Linhas duplicadas (ADP)", 6],
-            [ "Linhas duplicadas (WDAY)", 6],
+            [ "Linhas duplicadas (ADP)", duplicadas_adp],
+            [ "Linhas duplicadas (WDAY)", duplicadas_workday],
+            ["Número de colaboradores", work_from_brazil]
         ]
         # Adicionar contagem de irregularidades por coluna aos dados do card
         for i, (column, count) in enumerate(false_counts.items(), start=1):
@@ -130,25 +144,19 @@ if file1 and file2:
             card_data.append((column_name, count))
         # Ordenar dados do card por contagem de irregularidades
         card_data.sort(key=lambda x: x[1], reverse=True)
+
+        # card_num_colaboradores_por_ultimo = ["Número de colaboradores", work_from_brazil]
+        # card_data.append(card_num_colaboradores_por_ultimo)
+
         # Criar e exibir cards de monitoramento
         col1, col2 = st.columns(2)
         for i, (title, irregularities) in enumerate(card_data, start=1):
-            with col1 if i <= len(card_data) // 2 else col2:
-                create_monitoring_card(title, irregularities, total_records)
-        # Verificar discrepância entre bases quanto à localização (Brasil)
-        work_from_brazil = df1_cleaned['work_country'].value_counts()['Brazil']
-        if work_from_brazil > total_records:
-            with col1:
-                st.info(f'#### A base Workday possui {work_from_brazil} colaboradores com "Brazil" na coluna "work country" e a base ADP possui {total_records} colaboradores. Diferença de {work_from_brazil - total_records}')
-                st.warning('Irregularidade presente.')
-        elif total_records > work_from_brazil:
-            with col1:
-                st.info(f'#### A base ADP possui {total_records} colaboradores com "Brazil" na coluna "work country" e a base Workday possui {work_from_brazil} colaboradores. Diferença de {total_records - work_from_brazil}')
-                st.warning('Irregularidade presente.')
-        else:
-            with col1:
-                st.info(f'#### Sem diferença no número de colaboradores na base Workday que possui {work_from_brazil} colaboradores com "Brazil" na coluna "work country" a base ADP, com {total_records} colabordores')
-                st.success('Irregularidade corrigida!!')
+            if i % 2 == 1:  # Números ímpares vão para a coluna esquerda
+                with col1:
+                    create_monitoring_card(title, irregularities, total_records)
+            else:  # Números pares vão para a coluna direita
+                with col2:
+                    create_monitoring_card(title, irregularities, total_records)
         # Apresentar irregularidades de valores nulos
         valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
         contagem_especiais_por_coluna = merged_df.apply(lambda col: col.isin(valores_especiais).sum())

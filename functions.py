@@ -3,14 +3,15 @@ import numpy as np
 import streamlit as st 
 
 def limpeza_dados(df, nome):
-    # Converter as colunas de int64 para string
+   # Converter as colunas de int64 para string
     colunas_data = ['Original Hire Date', 'Date of Birth', 'Data da Admissão ', 'Data de Desligamento ', 'Data de Nascimento ']  
 
-    # Converter colunas para texto
-    colunas_para_texto = [coluna for coluna in df.columns if coluna not in colunas_data]
-    df[colunas_para_texto] = df[colunas_para_texto].astype(str)
+    # Converter todas as colunas exceto as colunas a serem mantidas
+    colunas_para_converter = [coluna for coluna in df.columns if coluna not in colunas_data]
+    df[colunas_para_converter] = df[colunas_para_converter].astype(str)
 
-    # Converter colunas de datas para datetime
+    
+
     colunas_para_data = [coluna for coluna in df.columns if coluna in colunas_data]
     for coluna in colunas_para_data:
         df[coluna] = pd.to_datetime(df[coluna], format='%m/%d/%Y', errors='coerce')
@@ -115,12 +116,51 @@ def col_check(df):
     return df
 
 def create_monitoring_card(title, irregularities, total_records):
-        st.write(f"#### {title}")
-        st.write("Quantidade de Irregularidades:", irregularities)
-        st.write("Quantidade de Dados Corretos:", total_records - irregularities)
-        st.write("Porcentagem de Irregularidades:", round((irregularities / total_records) * 100, 2), "%")
-        st.progress(1 - irregularities / total_records)
-        if irregularities == 0:
+        if title  == 'Número de colaboradores':
+            st.write(f"#### {title}")
+
+            irregularities_text = f"Colaboradores na base ADP: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{irregularities}</span>"
+            st.markdown(irregularities_text, unsafe_allow_html=True)
+
+            correct_data_text = f"Colaboradores na base WDAY: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{total_records}</span>"
+            st.markdown(correct_data_text, unsafe_allow_html=True)
+
+
+            if irregularities > total_records:
+                disc = irregularities - total_records
+            elif total_records > irregularities:
+                disc = total_records - irregularities
+
+            percentage_text = (
+                f"Discrepância: "
+                f"<span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{disc}</span>"
+            )
+            st.markdown(percentage_text, unsafe_allow_html=True)
+            st.progress(1- disc / total_records)
+
+            st.warning('Irregularidade presente.')
+            if irregularities == total_records:
                 st.success('Irregularidade corrigida!!')
+    
+                
+            
         else:
+            st.write(f"#### {title}")
+            irregularities_text = f"Quantidade de Irregularidades: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{irregularities}</span>"
+            st.markdown(irregularities_text, unsafe_allow_html=True)
+
+            correct_data_text = f"Quantidade de Dados Corretos: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{total_records - irregularities}</span>"
+            st.markdown(correct_data_text, unsafe_allow_html=True)
+
+            percentage = round((irregularities / total_records) * 100, 2)
+            percentage_text = (
+                f"Porcentagem de Irregularidades: "
+                f"<span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{percentage}%</span>"
+            )
+            st.markdown(percentage_text, unsafe_allow_html=True)
+            st.progress(1- irregularities / total_records)
+
+            if irregularities == 0:
+                st.success('Irregularidade corrigida!!')
+            else:
                 st.warning('Irregularidade presente.')
