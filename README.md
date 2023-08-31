@@ -16,7 +16,7 @@ This Streamlit web application is designed to monitor and display irregularities
 ## Installation and Usage
 
 1. Clone this repository to your local machine.
-2. Navigate to the project directory:
+2. Run on terminal:
 
 ```bash
 cd project-directory
