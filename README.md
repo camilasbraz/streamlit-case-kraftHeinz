@@ -8,6 +8,7 @@ This Streamlit web application is designed to monitor and display irregularities
 
 ## Features
 
+- Display an interactive table with filtering options to identify the irregular lines.
 - Display cards showing irregularities in different columns.
 - Visualization of irregularities' distribution and comparisons.
 - Highlight discrepancies between two data sources.
