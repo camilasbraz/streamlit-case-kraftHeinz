@@ -31,13 +31,14 @@ file2 = st.sidebar.file_uploader("Selecione a segunda base de dados ADP (Excel)"
 if file1 and file2:
     if file1.name == "Workday.xlsx" and file2.name == "ADP.xlsx":
         # Leitura, limpeza e join
-        df1 = pd.read_excel(file1)
-        df2 = pd.read_excel(file2)
+        df1 = pd.read_excel(file1, engine='openpyxl')
+        df2 = pd.read_excel(file2, engine='openpyxl')
         df1_cleaned = limpeza_dados(df1, "workday")
         df2_cleaned = limpeza_dados(df2, "adp")
         merged_df = join(df1_cleaned, df2_cleaned)
         check_df = col_check(merged_df)
         check_columns = [col for col in check_df.columns if col.endswith('_check')]
+
 
 
         # Exibir panorama geral da base integrada
@@ -110,11 +111,12 @@ if file1 and file2:
         # Contagem de registros e contagem de irregularidades por coluna
         total_records = check_df.shape[0]
         check_df_cols = check_df[check_columns]
+
         false_counts = check_df_cols.apply(lambda col: col.value_counts().get(False, 0))
 
         # Preparar dados para os cards de monitoramento
         card_data = [
-            [ "Sem ID internacional (ADP)", 0],
+            [ "Sem ID internacional (ADP)", 8],
             [ "Sem ID nacional (ADP)", 0],
             [ "Sem ID internacional (WDAY)", 5],
             [ "Sem ID nacional (WDAY)", 0],
