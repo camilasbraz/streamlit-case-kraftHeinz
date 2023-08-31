@@ -63,12 +63,27 @@ if file1 and file2:
         }
         # Filtrar colunas selecionadas
         colunas_selecionadas = ['id_nacional', 'id_internacional', 'Irregularidade presente']
-        print(selecionados)
+
         for opcao in selecionados:
             coluna_adp = f"{column_mapping2[opcao]}_adp"
             coluna_workday = f"{column_mapping2[opcao]}_workday"
             colunas_selecionadas.extend([coluna_adp, coluna_workday])
+            if filtrar_apenas_com_falso:
+               coluna_check = f"{column_mapping2[opcao]}_check"
+               colunas_selecionadas.extend([coluna_check])
+       
         df_select = filtro_false[colunas_selecionadas]
+
+        # Se o filtro de "False" for necessário, você pode aplicá-lo assim:
+        if filtrar_apenas_com_falso:
+            # Encontre as colunas "_check"
+            colunas_check = [coluna for coluna in df_select.columns if coluna.endswith('_check')]
+            # Mantenha apenas as linhas onde todas as colunas "_check" são True
+            df_select = df_select[~df_select[colunas_check].any(axis=1)]
+            # Remova as colunas "_check" do DataFrame
+            df_select = df_select.drop(columns=colunas_check)      
+
+        print(df_select.columns)
         # Remover colunas irrelevantes
         colunas_skip = ['id_nacional', 'id_internacional', 'Irregularidade presente','Tipo de Admissão', 'Data de Desligamento', 'Modo Ponto', 'work_country', 'genero_check', 'raca_etnia_check', 'estado_civil_check', 'data_nascimento_check', 'data_admissao_check']
         ordenar = ['id_nacional','id_internacional', 'Irregularidade presente'] + [col for col in df_select.columns if col not in colunas_skip]
