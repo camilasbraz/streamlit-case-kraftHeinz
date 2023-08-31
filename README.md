@@ -20,6 +20,8 @@ This Streamlit web application is designed to monitor and display irregularities
 
 ```bash
 cd project-directory
+python -m venv venv
+venv/Scripts/activate
 pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
