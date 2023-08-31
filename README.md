@@ -1,6 +1,6 @@
-# Project Title
+# Streamlit KraftHeinz case
 
-**Monitoramento de Irregularidades**
+**Database irregularities comparison**
 
 ## Description
 
