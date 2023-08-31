@@ -11,7 +11,18 @@ imagem_url = 'assets/logo.png'
 
 # Configuração da página
 st.set_page_config(page_icon=favicon_url)
-st.title('Comparação de dados das bases ADP e Workday')
+
+# Título e imagem
+col1, col2 = st.columns([1, 3])  # Distribuição de largura das colunas
+
+# Coluna 1 (imagem)
+with col1:
+    st.image(imagem_url)
+
+# Coluna 2 (título)
+with col2:
+    st.title("Comparação de dados das bases ADP e Workday")
+
 
 # Carregar bases de dados através da barra lateral
 st.sidebar.header("Carregar Bases de Dados")
