@@ -4,7 +4,7 @@
 
 ## Description
 
-This Streamlit web application is designed to monitor and display irregularities in a dataset. It presents various insights related to irregular data points and allows visualization of the irregularities' distribution across different columns. Additionally, the application highlights the discrepancies between two different data sources.
+This Streamlit web application is designed to compar and display irregularities in a dataset. It presents various insights related to irregular data points and allows visualization of the irregularities' distribution across different columns. Additionally, the application highlights the discrepancies between two different data sources.
 
 ## Features
 
