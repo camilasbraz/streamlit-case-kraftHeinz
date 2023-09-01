@@ -5,7 +5,7 @@ import openpyxl
 from io import BytesIO
 from functions import *
 
-import plotly.express as px
+
 
 # URLs para ícone da página e imagem
 favicon_url = "assets/favicon.ico"
@@ -159,10 +159,9 @@ if file1 and file2:
             false_counts = check_df_cols.apply(lambda col: col.value_counts().get(False, 0))
 
             
-            # Preparar dados para os cards de monitoramento
-            work_from_brazil = df1_cleaned['work_country'].value_counts()['Brazil']
-
+            # Preparar dados para os cards/graficos de monitoramento
             valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
+            work_from_brazil = df1_cleaned['work_country'].value_counts()['Brazil']
             sem_id_nac_adp  = df1_cleaned['id_nacional'].isin(valores_especiais).sum()
             sem_id_inter_adp = df1_cleaned['id_internacional'].isin(valores_especiais).sum()
             sem_id_nac_workday  = df2_cleaned['id_nacional'].isin(valores_especiais).sum()
@@ -174,6 +173,7 @@ if file1 and file2:
                 num_col = work_from_brazil - total_records
             elif work_from_brazil < total_records:
                 num_col = total_records - work_from_brazil 
+            
             card_data = [
                 [ "Sem ID internacional (ADP)", sem_id_nac_adp],
                 [ "Sem ID nacional (ADP)", sem_id_inter_adp],
@@ -184,6 +184,7 @@ if file1 and file2:
                 [ "Linhas duplicadas (WDAY)", duplicadas_workday],
                 ["Número de colaboradores", num_col]
             ]
+
             # Adicionar contagem de irregularidades por coluna aos dados do card
             for i, (column, count) in enumerate(false_counts.items(), start=1):
                 column_name = list(column_mapping.values())[i - 1]
@@ -191,46 +192,9 @@ if file1 and file2:
             # Ordenar dados do card por contagem de irregularidades
             card_data.sort(key=lambda x: x[1], reverse=True)
 
-            # Exemplo de dados
-
-            # Crie um DataFrame a partir dos dados
-            df_graf = pd.DataFrame(card_data)
             
-            df_graf = df_graf.rename(columns={0: "Categoria", 1: "Quantidade de Irregularidades"})
-
-
-            # Filtrar apenas as linhas com "Quantidade de Irregularidades" > 0
-            df_graf_filtrado = df_graf[df_graf["Quantidade de Irregularidades"] > 0]
-            df_graf_filtrado["perc"] = round(100 * df_graf_filtrado["Quantidade de Irregularidades"] / total_records, 1)
-            df_graf_filtrado["perc_txt"] = df_graf_filtrado["perc"].astype(str)+ "%"
-            df_graf_filtrado = df_graf_filtrado.sort_values(by="Quantidade de Irregularidades")
-
-            # Crie um gráfico de barras horizontais interativo com Plotly Express
-            fig = px.bar(df_graf_filtrado, y="Categoria", x="Quantidade de Irregularidades", 
-                        orientation='h',
-                          title="",
-                          color_discrete_sequence=["#1D3C6D"],
-                          )
-
-            fig.update_traces(text=(df_graf_filtrado["perc_txt"]) , textposition="outside")
-
-            # Remove x-axis labels and values
-            fig.update_xaxes(title_text="", showticklabels=False)
-
-            # Remove y-axis label
-
-            fig.update_yaxes(title_text="", tickfont=dict(size=14, family="Roboto"))
-            fig.update_layout(
-                margin=dict(l=0, r=0),
-                bargap=0.3,
-                autosize=False,  # Disable autosizing
-                xaxis_fixedrange=True,  # Disable zooming on the x-axis
-                yaxis_fixedrange=True,  
-                showlegend=False,
-                height=500
-            )
-
-            st.plotly_chart(fig, config={"displayModeBar": False})
+            grafico(card_data, total_records)
+        
 
             # Criar e exibir cards de monitoramento
             col1, col2 = st.columns(2)

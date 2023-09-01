@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import streamlit as st 
+import plotly.express as px
 
 def limpeza_dados(df, nome):
    # Converter as colunas de int64 para string
@@ -146,7 +147,7 @@ def create_monitoring_card(title, irregularities, total_records):
             correct_data_text = f"Quantidade de Dados Corretos: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{total_records - irregularities}</span>"
             st.markdown(correct_data_text, unsafe_allow_html=True)
 
-            percentage = round((irregularities / total_records) * 100, 2)
+            percentage = round((irregularities / total_records) * 100, 1)
             percentage_text = (
                 f"Porcentagem de Irregularidades: "
                 f"<span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{percentage}%</span>"
@@ -158,3 +159,66 @@ def create_monitoring_card(title, irregularities, total_records):
                 st.success('Irregularidade corrigida!!')
             else:
                 st.warning('Irregularidade presente.')
+
+
+def grafico(data, total_records):
+    df_graf = pd.DataFrame(data)
+    df_graf = df_graf.rename(columns={0: "Categoria", 1: "Quantidade de Irregularidades"})
+
+
+    # Filtrar apenas as linhas com "Quantidade de Irregularidades" > 0
+    df_graf_filtrado = df_graf[df_graf["Quantidade de Irregularidades"] > 0]
+    df_graf_filtrado["perc"] = round(100 * df_graf_filtrado["Quantidade de Irregularidades"] / total_records, 1)
+    df_graf_filtrado["perc_txt"] = df_graf_filtrado["perc"].astype(str) + "%"
+    df_graf_filtrado = df_graf_filtrado.sort_values(by="Quantidade de Irregularidades")
+
+    # Crie um gráfico de barras horizontais interativo com Plotly Express
+    fig = px.bar(
+        df_graf_filtrado,
+        y="Categoria",
+        x="Quantidade de Irregularidades",
+        orientation='h',
+        title="",
+        color_discrete_sequence=["#1D3C6D"],
+    )
+
+    largura_da_barra = df_graf_filtrado['Quantidade de Irregularidades']
+    text_position = ['inside' if largura >= 800 else 'outside' for largura in largura_da_barra]
+
+    df_graf_filtrado['custom_text'] = df_graf_filtrado.apply(
+    lambda row: f"A categoria {row['Categoria']} apresenta {row['Quantidade de Irregularidades']} irregularidades",
+    axis=1
+)
+    # Customiza o texto de hover
+    custom_text = df_graf_filtrado.apply(
+        lambda row: f"A categoria {row['Categoria']} apresenta {row['Quantidade de Irregularidades']} irregularidades",
+        axis=1
+    )
+
+    # Atualize os traços do gráfico
+    fig.update_traces(
+        text=df_graf_filtrado["perc_txt"],
+        textposition=text_position,
+        textfont=dict(size=14),
+        hovertemplate=df_graf_filtrado["custom_text"]
+    )
+
+    # Remove rótulos no eixo x
+    fig.update_xaxes(title_text="", showticklabels=False)
+
+    # Remova o rótulo no eixo y e ajuste o tamanho da fonte
+    fig.update_yaxes(title_text="", tickfont=dict(size=14, family="Roboto"))
+
+    # Personalize a aparência do gráfico
+    fig.update_layout(
+        margin=dict(l=0, r=0),
+        bargap=0.3,
+        autosize=False,  # Desabilita o ajuste automático de tamanho
+        xaxis_fixedrange=True,  # Desabilita o zoom no eixo x
+        yaxis_fixedrange=True,
+        showlegend=False,
+        height=500
+    )
+
+    # Exibe o gráfico no Streamlit
+    st.plotly_chart(fig, config={"displayModeBar": False})
