@@ -119,24 +119,18 @@ def create_monitoring_card(title, irregularities, total_records):
         if title  == 'Número de colaboradores':
             st.write(f"#### {title}")
 
-            irregularities_text = f"Colaboradores na base ADP: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{irregularities}</span>"
+            irregularities_text = f"Colaboradores na base ADP: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{total_records}</span>"
             st.markdown(irregularities_text, unsafe_allow_html=True)
 
-            correct_data_text = f"Colaboradores na base WDAY: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{total_records}</span>"
+            correct_data_text = f"Colaboradores na base WDAY: <span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{total_records+irregularities}</span>"
             st.markdown(correct_data_text, unsafe_allow_html=True)
-
-
-            if irregularities > total_records:
-                disc = irregularities - total_records
-            elif total_records > irregularities:
-                disc = total_records - irregularities
 
             percentage_text = (
                 f"Discrepância: "
-                f"<span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{disc}</span>"
+                f"<span style='border: 1px solid #4d4d4d; border-radius: 5px; padding: 4px; background-color: #4d4d4d;'>{irregularities}</span>"
             )
             st.markdown(percentage_text, unsafe_allow_html=True)
-            st.progress(1- disc / total_records)
+            st.progress(1- irregularities / total_records)
 
             st.warning('Irregularidade presente.')
             if irregularities == total_records:
