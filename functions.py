@@ -113,6 +113,12 @@ def col_check(df):
     df['data_nascimento_check'] = df['data_nascimento_adp'] == df['data_nascimento_workday']
     df['data_admissao_check'] = df['data_admissao_adp'] == df['data_admissao_workday']
     
+    # valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
+    # column_to_exclude = 'Data de Desligamento'
+    # # Create a new column 'has_null' to indicate if there are any null values in selected columns
+    # columns_to_check = [col for col in df.columns if col != column_to_exclude]
+    # df['nulo_check'] = ~df[columns_to_check].isin(valores_especiais).any(axis=1)
+    # df['nao_encontrados_check'] = ~df['id_internacional'].isin(valores_especiais)
 
     return df
 
@@ -189,11 +195,6 @@ def grafico(data, total_records):
     lambda row: f"A categoria {row['Categoria']} apresenta {row['Quantidade de Irregularidades']} irregularidades",
     axis=1
 )
-    # Customiza o texto de hover
-    custom_text = df_graf_filtrado.apply(
-        lambda row: f"A categoria {row['Categoria']} apresenta {row['Quantidade de Irregularidades']} irregularidades",
-        axis=1
-    )
 
     # Atualize os traços do gráfico
     fig.update_traces(
@@ -221,4 +222,4 @@ def grafico(data, total_records):
     )
 
     # Exibe o gráfico no Streamlit
-    st.plotly_chart(fig, config={"displayModeBar": False})
+    st.plotly_chart(fig, config={"displayModeBar": False, 'displaylogo': False,})

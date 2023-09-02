@@ -37,6 +37,7 @@ st.sidebar.header("Carregar Bases de Dados")
 file1 = st.sidebar.file_uploader("Selecione a primeira base de dados Workday (Excel)", type=["xlsx"])
 file2 = st.sidebar.file_uploader("Selecione a segunda base de dados ADP (Excel)", type=["xlsx"])
 
+
 # Verificar se as bases de dados foram carregadas
 if file1 and file2:
     if file1.name == "Workday.xlsx" and file2.name == "ADP.xlsx":
@@ -149,7 +150,9 @@ if file1 and file2:
                 'check_raca': 'Raça/Etnia',
                 'check_estado_civil': 'Estado Civil',
                 'check_data_nascimento': 'Data de Nascimento',
-                'check_data_admissao': 'Data de Admissão'
+                'check_data_admissao': 'Data de Admissão',
+                # 'check_nulos': 'Colaboradores nulos',
+                # 'check_nao encontrados': 'Colaboradores não encontrados'
             }
             
             # Contagem de registros e contagem de irregularidades por coluna
@@ -205,6 +208,7 @@ if file1 and file2:
                 else:  # Números pares vão para a coluna direita
                     with col2:
                         create_monitoring_card(title, irregularities, total_records)
+                        
             # Apresentar irregularidades de valores nulos
             valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
             contagem_especiais_por_coluna = merged_df.apply(lambda col: col.isin(valores_especiais).sum())
@@ -212,9 +216,12 @@ if file1 and file2:
             table = pd.DataFrame(contagem_especiais_por_coluna, columns=['Contagem'])
             # Filtrar apenas as linhas com contagem diferente de zero
             table_filtrada = table[table['Contagem'] != 0]
+            table_filtrada = table_filtrada.drop('Data de Desligamento')
+            table_filtrada = table_filtrada.sort_values(by='Contagem', ascending = False)
             st.write("##### Valores nulos:")
             # Mostrar tabela filtrada
             st.table(table_filtrada)
+
         elif colunas_faltando_workday:
             st.warning(f"Colunas faltando no arquivo Workday: {', '.join(colunas_faltando_workday)}")
         elif colunas_faltando_adp:
