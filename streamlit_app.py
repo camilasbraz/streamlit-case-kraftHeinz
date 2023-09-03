@@ -206,9 +206,10 @@ if file1 and file2:
                         create_monitoring_card(title, irregularities, total_records)
                         
             # Apresentar irregularidades de valores nulos
-            valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
+            valores_especiais = ["nan", "null", np.nan, "", pd.NaT, "NaT"]
             contagem_especiais_por_coluna = merged_df.apply(lambda col: col.isin(valores_especiais).sum())
             table = pd.DataFrame(contagem_especiais_por_coluna, columns=['Contagem'])
+    
             # Filtrar apenas as linhas com contagem diferente de zero, retirar Data de Desligamento (que apresenta apenas valores nulos) e ordenar
             table_filtrada = table[table['Contagem'] != 0]
             table_filtrada = table_filtrada.drop('Data de Desligamento')

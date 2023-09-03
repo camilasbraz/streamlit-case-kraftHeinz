@@ -57,6 +57,10 @@ def join(df1, df2):
     return df_join
 
 def col_check(df):
+    mapping_raca_etnia_workday = {
+    'Nao Informado (Brazil) (inactive)' : 'Prefer not to answer (Não desejo responder) (Brazil)'
+    }
+
     # Mapeamento para a coluna 'raca_etnia_adp' para 'raca_etnia_workday'
     mapping_raca_etnia = {
         'Branco': 'White (Branco) (Brazil)',
@@ -66,24 +70,30 @@ def col_check(df):
         'Amarelo': 'Asian (Amarelo) (Brazil)',
         'Mulato': 'Not Listed (Outros) (Brazil)',
         'Indígena': 'Indigenous (Indígena) (Brazil)',
-        '-': 'nan'
+        '-':'-' ,
+        '0':'0'
     }
+
     df['raca_etnia_adp'] = df['raca_etnia_adp'].map(mapping_raca_etnia)
+
     # Mapeamento para a coluna 'estado_civil_adp' para 'estado_civil_workday'
     mapping_estado_civil = {
         'Solteiro': 'Single (Brazil)',
         'Casado': 'Married (Brazil)',
         'Divorciado': 'Divorced (Brazil)',
-        'União Estável': 'Prefer not to answer (Brazil)',
         'Separado': 'Separated (Brazil)',
         'Outros': 'Other (Brazil)',
-        'Viúvo': 'Widowed (Brazil)'
+        'Viúvo': 'Widowed (Brazil)',
+        'União Estável': 'União Estável'
     }
+    # Separar uniao estavel
     df['estado_civil_adp'] = df['estado_civil_adp'].map(mapping_estado_civil)
+
     # Mapeamento para a coluna 'genero_adp' para 'genero_workday'
     mapping_genero = {
         'Masculino': 'Male',
         'Feminino': 'Female',
+        '28.000,00': '28.000,00'
     }
     df['genero_adp'] = df['genero_adp'].map(mapping_genero)
 
