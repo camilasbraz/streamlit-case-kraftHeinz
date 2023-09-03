@@ -31,19 +31,17 @@ css='''
 st.markdown(css, unsafe_allow_html=True)
 
 
-# Carregar bases de dados através da barra lateral
+# Carregar bases de dados na barra lateral
 st.sidebar.image(imagem_url, width = 250)
 st.sidebar.header("Carregar Bases de Dados")
 file1 = st.sidebar.file_uploader("Selecione a primeira base de dados Workday (Excel)", type=["xlsx"])
 file2 = st.sidebar.file_uploader("Selecione a segunda base de dados ADP (Excel)", type=["xlsx"])
 
 
-# Verificar se as bases de dados foram carregadas
+# Verificar se as duas bases de dados foram carregadas com os nomes corretos
 if file1 and file2:
     if file1.name == "Workday.xlsx" and file2.name == "ADP.xlsx":
 
-
-        # Leitura, limpeza e join
         df1 = pd.read_excel(file1, engine='openpyxl')
         df2 = pd.read_excel(file2, engine='openpyxl')
 
@@ -61,14 +59,14 @@ if file1 and file2:
         colunas_presentes_adp = list(df2.columns)
         colunas_faltando_adp = [coluna for coluna in colunas_desejadas_adp if coluna not in colunas_presentes_adp]
 
+        # Verificar se os arquivos de entrada apresentam todas as colunas necessárias 
         if not colunas_faltando_workday and not colunas_faltando_adp:
+            # Limpeza e join
             df1_cleaned = limpeza_dados(df1, "workday")
             df2_cleaned = limpeza_dados(df2, "adp")
             merged_df = join(df1_cleaned, df2_cleaned)
             check_df = col_check(merged_df)
             check_columns = [col for col in check_df.columns if col.endswith('_check')]
-
-
 
             # Exibir panorama geral da base integrada
             st.write("### Pânorama geral da base de dados integrada")
@@ -76,11 +74,13 @@ if file1 and file2:
             # Verificar irregularidades nas colunas e criar coluna 'Irregularidade presente'
             check_df['Irregularidade presente'] = check_df.apply(lambda row: any(row[col] == False for col in check_columns), axis=1)
             filtrar_apenas_com_falso = st.checkbox("Mostrar apenas colaboradores com irregularidades?", key="1")
+            # Filtar apenas colaboradores com irregularidades presentes caso o filtro for selecionado
             if filtrar_apenas_com_falso:
+                # Filtar apenas linhas com alguma irregularidade presente
                 filtro_false = check_df[check_df['Irregularidade presente']]
             else:
                 filtro_false = check_df
-            # Selecionar colunas de interesse
+            # Selecionar as colunas de interesse (que podem conter irregularidade)
             opcoes = ["Gênero", "Raça/Etnia", "Estado Civil", "Data de Nascimento", "Data de Admissão"]
             selecionados = st.multiselect("Selecione as opções:", opcoes, default=opcoes)
             column_mapping2 = {
@@ -90,7 +90,6 @@ if file1 and file2:
                 'Data de Nascimento': 'data_nascimento',
                 'Data de Admissão': 'data_admissao'
             }
-            # Filtrar colunas selecionadas
             colunas_selecionadas = ['id_nacional', 'id_internacional', 'Irregularidade presente']
 
             for opcao in selecionados:
@@ -103,19 +102,16 @@ if file1 and file2:
         
             df_select = filtro_false[colunas_selecionadas]
 
-            # Se o filtro de "False" for necessário, você pode aplicá-lo assim:
             if filtrar_apenas_com_falso:
-                # Encontre as colunas "_check"
                 colunas_check = [coluna for coluna in df_select.columns if coluna.endswith('_check')]
-                # Mantenha apenas as linhas onde todas as colunas "_check" são True
                 df_select = df_select[~df_select[colunas_check].any(axis=1)]
-                # Remova as colunas "_check" do DataFrame
                 df_select = df_select.drop(columns=colunas_check)      
 
-            # Remover colunas irrelevantes
+            # Remover colunas irrelevantes para a análise
             colunas_skip = ['id_nacional', 'id_internacional', 'Irregularidade presente','Tipo de Admissão', 'Data de Desligamento', 'Modo Ponto', 'work_country', 'genero_check', 'raca_etnia_check', 'estado_civil_check', 'data_nascimento_check', 'data_admissao_check']
             ordenar = ['id_nacional','id_internacional', 'Irregularidade presente'] + [col for col in df_select.columns if col not in colunas_skip]
             df_select = df_select[ordenar]
+
             # Filtrar por ID Nacional e Internacional
             filter_id_nacional = st.text_input("Filtrar por ID Nacional")
             filter_id_internacional = st.text_input("Filtrar por ID Internacional")
@@ -170,9 +166,9 @@ if file1 and file2:
             sem_id_inter_adp = df2_cleaned['id_internacional'].isin(valores_especiais).sum()
             sem_id_nac_workday  = df1_cleaned['id_nacional'].isin(valores_especiais).sum()
             sem_id_inter_workday  = df1_cleaned['id_internacional'].isin(valores_especiais).sum()
+            # IDS NACIONAL E INTERNACIONAL JUNTOS PARA COMPARAR DUPLCIADAS
             duplicadas_adp = df2_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
             duplicadas_workday = df1_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
-    
 
             if work_from_brazil > total_records:
                 num_col = work_from_brazil - total_records
@@ -180,12 +176,11 @@ if file1 and file2:
                 num_col = total_records - work_from_brazil 
             
             card_data = [
-                [ "Sem ID nacional (ADP)", sem_id_nac_adp],
-                [ "Sem ID internacional (ADP)", sem_id_inter_adp],
-                [ "Sem ID nacional (WDAY)", sem_id_nac_workday],
-                [ "Sem ID internacional (WDAY)", sem_id_inter_workday],
-                # IDS NACIONAL E INTERNACIONAL JUNTOS PARA COMPARAR DUPLCIADAS
-                [ "Linhas duplicadas (ADP)", duplicadas_adp],
+                ["Sem ID nacional (ADP)", sem_id_nac_adp],
+                ["Sem ID internacional (ADP)", sem_id_inter_adp],
+                ["Sem ID nacional (WDAY)", sem_id_nac_workday],
+                ["Sem ID internacional (WDAY)", sem_id_inter_workday],
+                ["Linhas duplicadas (ADP)", duplicadas_adp],
                 [ "Linhas duplicadas (WDAY)", duplicadas_workday],
                 ["Número de colaboradores", num_col]
             ]
@@ -197,31 +192,28 @@ if file1 and file2:
             # Ordenar dados do card por contagem de irregularidades
             card_data.sort(key=lambda x: x[1], reverse=True)
 
-            
+            # Função para criar e exibir gráfico
             grafico(card_data, total_records)
-        
-
-            # Criar e exibir cards de monitoramento
+            # Criar e exibir cards de monitoramento em 2 colunas
             col1, col2 = st.columns(2)
             for i, (title, irregularities) in enumerate(card_data, start=1):
-                if i % 2 == 1:  # Números ímpares vão para a coluna esquerda
+                # Números ímpares vão para a coluna esquerda e números pares vão para a coluna direita
+                if i % 2 == 1:  
                     with col1:
                         create_monitoring_card(title, irregularities, total_records)
-                else:  # Números pares vão para a coluna direita
+                else:  
                     with col2:
                         create_monitoring_card(title, irregularities, total_records)
                         
             # Apresentar irregularidades de valores nulos
             valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
             contagem_especiais_por_coluna = merged_df.apply(lambda col: col.isin(valores_especiais).sum())
-            # Criação da tabela com contagem de valores nulos
             table = pd.DataFrame(contagem_especiais_por_coluna, columns=['Contagem'])
-            # Filtrar apenas as linhas com contagem diferente de zero
+            # Filtrar apenas as linhas com contagem diferente de zero, retirar Data de Desligamento (que apresenta apenas valores nulos) e ordenar
             table_filtrada = table[table['Contagem'] != 0]
             table_filtrada = table_filtrada.drop('Data de Desligamento')
             table_filtrada = table_filtrada.sort_values(by='Contagem', ascending = False)
             st.write("##### Valores nulos:")
-            # Mostrar tabela filtrada
             st.table(table_filtrada)
 
         elif colunas_faltando_workday:

@@ -10,14 +10,11 @@ This Streamlit web application is designed to compar and display irregularities 
 
 - Display an interactive table with filtering options to identify the irregular lines.
 - Display cards showing irregularities in different columns.
-- Visualization of irregularities' distribution and comparisons.
+- Bar graph visualization of irregularities' distribution and comparisons.
 - Highlight discrepancies between two data sources.
 - Show a data table with the count of null/missing values.
 
 ## Installation and Usage
-
-1. Clone this repository to your local machine.
-2. Run on terminal:
 
 ```bash
 cd project-directory
