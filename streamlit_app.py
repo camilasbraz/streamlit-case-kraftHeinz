@@ -163,14 +163,16 @@ if file1 and file2:
 
             
             # Preparar dados para os cards/graficos de monitoramento
+            df1_cleaned = df1_cleaned[df1_cleaned['work_country'] == 'Brazil']
             valores_especiais = ["nan", "null", np.nan, "",  pd.NaT]
             work_from_brazil = df1_cleaned['work_country'].value_counts()['Brazil']
-            sem_id_nac_adp  = df1_cleaned['id_nacional'].isin(valores_especiais).sum()
-            sem_id_inter_adp = df1_cleaned['id_internacional'].isin(valores_especiais).sum()
-            sem_id_nac_workday  = df2_cleaned['id_nacional'].isin(valores_especiais).sum()
-            sem_id_inter_workday  = df2_cleaned['id_internacional'].isin(valores_especiais).sum()
-            duplicadas_adp = df1_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
-            duplicadas_workday = df2_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
+            sem_id_nac_adp  = df2_cleaned['id_nacional'].isin(valores_especiais).sum()
+            sem_id_inter_adp = df2_cleaned['id_internacional'].isin(valores_especiais).sum()
+            sem_id_nac_workday  = df1_cleaned['id_nacional'].isin(valores_especiais).sum()
+            sem_id_inter_workday  = df1_cleaned['id_internacional'].isin(valores_especiais).sum()
+            duplicadas_adp = df2_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
+            duplicadas_workday = df1_cleaned.duplicated(['id_nacional', 'id_internacional']).sum()
+    
 
             if work_from_brazil > total_records:
                 num_col = work_from_brazil - total_records
@@ -178,10 +180,10 @@ if file1 and file2:
                 num_col = total_records - work_from_brazil 
             
             card_data = [
-                [ "Sem ID internacional (ADP)", sem_id_nac_adp],
-                [ "Sem ID nacional (ADP)", sem_id_inter_adp],
-                [ "Sem ID internacional (WDAY)", sem_id_nac_workday],
-                [ "Sem ID nacional (WDAY)", sem_id_inter_workday],
+                [ "Sem ID nacional (ADP)", sem_id_nac_adp],
+                [ "Sem ID internacional (ADP)", sem_id_inter_adp],
+                [ "Sem ID nacional (WDAY)", sem_id_nac_workday],
+                [ "Sem ID internacional (WDAY)", sem_id_inter_workday],
                 # IDS NACIONAL E INTERNACIONAL JUNTOS PARA COMPARAR DUPLCIADAS
                 [ "Linhas duplicadas (ADP)", duplicadas_adp],
                 [ "Linhas duplicadas (WDAY)", duplicadas_workday],
