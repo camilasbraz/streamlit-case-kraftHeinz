@@ -34,8 +34,8 @@ st.markdown(css, unsafe_allow_html=True)
 # Carregar bases de dados na barra lateral
 st.sidebar.image(imagem_url, width = 250)
 st.sidebar.header("Carregar Bases de Dados")
-file1 = st.sidebar.file_uploader("Selecione a primeira base de dados Workday (Excel)", type=["xlsx"])
-file2 = st.sidebar.file_uploader("Selecione a segunda base de dados ADP (Excel)", type=["xlsx"])
+file1 = st.sidebar.file_uploader("Selecione a base de dados Workday (Excel)", type=["xlsx"])
+file2 = st.sidebar.file_uploader("Selecione a base de dados ADP (Excel)", type=["xlsx"])
 
 
 # Verificar se as duas bases de dados foram carregadas com os nomes corretos
@@ -70,7 +70,7 @@ if file1 and file2:
 
             # Exibir panorama geral da base integrada
             st.write("### Pânorama geral da base de dados integrada")
-            st.write("##### Aqui é possível visualizar a base de dado que junta as informações dos dois sistemas, filtrar pelos campos de interesse e baixar os dados filtrados.")
+            st.write("##### Aqui é possível visualizar a base de dados que concatena as informações dos dois sistemas, filtrar pelos campos de interesse e baixar os dados filtrados.")
             # Verificar irregularidades nas colunas e criar coluna 'Irregularidade presente'
             check_df['Irregularidade presente'] = check_df.apply(lambda row: any(row[col] == False for col in check_columns), axis=1)
             filtrar_apenas_com_falso = st.checkbox("Mostrar apenas colaboradores com irregularidades?", key="1")
